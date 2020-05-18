@@ -45,7 +45,9 @@ defmodule RemoteSocial.MixProject do
       {:plug_cowboy, "~> 2.0"},
       {:bcrypt_elixir, "~> 2.2"},
       {:guardian, "~> 2.1"},
-      {:poison, "~> 4.0.1"}
+      {:poison, "~> 4.0.1"},
+      {:ecto_enum, "~> 1.4"}
+
     ]
   end
 

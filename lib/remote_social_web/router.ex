@@ -15,8 +15,10 @@ defmodule RemoteSocialWeb.Router do
 
   scope "/api", RemoteSocialWeb do
     pipe_through [:api, :auth]
-    resources "/company", CompanyController, [:new, :edit, :create]
-    resources "/members", MembersController, [:new, :edit, :create]
+    resources "/company", CompanyController, except: [:new, :edit, :create]
+    resources "/members", MembersController, except: [:new, :edit, :create]
+    resources "/messages", MessagesController, except: [:new, :edit]
+    resources "/posts", PostsController, except: [:new, :edit]
   end
 
   # CompanyController scope functions that may not need authentication to function.

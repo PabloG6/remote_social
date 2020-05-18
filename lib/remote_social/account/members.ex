@@ -3,16 +3,21 @@ defmodule RemoteSocial.Account.Members do
   import Ecto.Changeset
   alias RemoteSocial
   alias RemoteSocial.Org
+  alias RemoteSocial.Social
   alias RemoteSocial.Account.Members
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
+  @timestamps_opts [type: :utc_datetime]
+
   schema "members" do
     field :email, :string
     field :name, :string
     field :password_hash, :string
     field :password, :string, virtual: true
     belongs_to :company, Org.Company
-
+    has_many :received_messages, Social.Messages, foreign_key: :recipient_id
+    has_many :sent_messages, Social.Messages, foreign_key: :sender_id
+    has_many :posts, Social.Posts, foreign_key: :author_id
     timestamps()
   end
 
