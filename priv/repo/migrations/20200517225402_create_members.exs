@@ -7,7 +7,7 @@ defmodule RemoteSocial.Repo.Migrations.CreateMembers do
       add :name, :string
       add :email, :string
       add :password_hash, :string
-
+      add :company_id, references(:company, type: :binary_id)
       timestamps()
     end
 

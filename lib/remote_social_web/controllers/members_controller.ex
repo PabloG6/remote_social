@@ -40,4 +40,39 @@ defmodule RemoteSocialWeb.MembersController do
       send_resp(conn, :no_content, "")
     end
   end
+
+  def signup(conn, %{"members" => member_params}) do
+    with {:ok, %Members{} = company} <- Account.create_members(member_params) do
+      conn
+      |> put_status(:created)
+      |> authenticate_member(company)
+    end
+  end
+
+  def login(conn, %{"email" => email, "password" => password}) do
+    with {:ok, %Members{} = company} <- Account.get_members_by(email: email) do
+      conn
+      |> put_status(:ok)
+      |> authenticate_member(%{company | password: password})
+    end
+  end
+
+  defp authenticate_member(conn, %Members{} = member) do
+    with {:ok, member} <- Account.authenticate_members(member),
+         conn <- RemoteSocial.Auth.Guardian.Plug.sign_in(conn, member),
+         token <- RemoteSocial.Auth.Guardian.Plug.current_token(conn) do
+      conn
+      |> put_view(RemoteSocialWeb.MembersView)
+      |> render("login.json", members: member, token: token)
+    else
+      {:error, :invalid_credentials} ->
+        conn
+        |> put_resp_content_type("application/json")
+        |> resp(401, Poison.encode!(%{message: "Incorrect email or password", code: :incorrect_credentials}))
+        |> send_resp()
+
+      error ->
+        error
+    end
+  end
 end

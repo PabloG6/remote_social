@@ -21,6 +21,15 @@ defmodule RemoteSocial.Org do
     Repo.all(Company)
   end
 
+  def get_company_by(params) do
+    with %Company{} = company <- Repo.get_by(Company, params) do
+      {:ok, company}
+    else
+      nil ->
+        {:error, :not_found}
+    end
+  end
+
   @doc """
   Gets a single company.
 
@@ -105,7 +114,6 @@ defmodule RemoteSocial.Org do
   def add_member(%Company{} = company, %Account.Members{} = member) do
     company
     |> Account.attach_company(member)
-
   end
 
   @spec authenticate_company(RemoteSocial.Org.Company.t()) ::

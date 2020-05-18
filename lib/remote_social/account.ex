@@ -36,12 +36,22 @@ defmodule RemoteSocial.Account do
 
   """
   def get_members!(id), do: Repo.get!(Members, id)
+
   def get_members(id) do
     with %Members{} = member <- Repo.get(Members, id) do
       {:ok, member}
     else
       nil ->
         {:error, :member_not_found}
+    end
+  end
+
+  def get_members_by(params) do
+    with %Members{} = members <- Repo.get_by(Members, params) do
+      {:ok, members}
+    else
+      nil ->
+        {:error, :not_found}
     end
   end
 
@@ -107,12 +117,20 @@ defmodule RemoteSocial.Account do
 
   """
 
-
   def attach_company(%Org.Company{} = company, %Members{} = member) do
-    Accounts.Members.attach_company_changeset(company, member)
+    Members.attach_company_changeset(member, company)
     |> Repo.insert()
   end
+
   def change_members(%Members{} = members, attrs \\ %{}) do
     Members.changeset(members, attrs)
+  end
+
+  def authenticate_members(%Members{} = members) do
+    if Bcrypt.verify_pass(members.password, members.password_hash) do
+      {:ok, members}
+    else
+      {:error, :invalid_credentials}
+    end
   end
 end

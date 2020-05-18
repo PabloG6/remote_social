@@ -39,6 +39,11 @@ defmodule RemoteSocial.OrgTest do
       assert %{Org.get_company!(company.id) | password: nil} == %{company | password: nil}
     end
 
+    test "get_company_by/1 returns the company when given certain params" do
+      _company = company_fixture()
+      assert {:ok, _company} = Org.get_company_by(email: "some email")
+    end
+
     test "create_company/1 with valid data creates a company" do
       assert {:ok, %Company{} = company} = Org.create_company(@valid_attrs)
       assert company.company_name == "some company_name"

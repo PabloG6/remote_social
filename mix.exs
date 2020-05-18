@@ -46,7 +46,6 @@ defmodule RemoteSocial.MixProject do
       {:bcrypt_elixir, "~> 2.2"},
       {:guardian, "~> 2.1"},
       {:poison, "~> 4.0.1"}
-
     ]
   end
 

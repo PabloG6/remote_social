@@ -8,7 +8,6 @@ defmodule RemoteSocial.Repo.Migrations.CreateCompany do
       add :company_tag, :string
       add :email, :string
       add :password_hash, :string
-
       timestamps()
     end
 

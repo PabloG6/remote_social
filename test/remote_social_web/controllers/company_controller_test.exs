@@ -3,6 +3,7 @@ defmodule RemoteSocialWeb.CompanyControllerTest do
 
   alias RemoteSocial.Org
   alias RemoteSocial.Org.Company
+  alias RemoteSocial.Account
 
   @create_attrs %{
     company_name: "some company_name",
@@ -28,6 +29,8 @@ defmodule RemoteSocialWeb.CompanyControllerTest do
   end
 
   describe "index" do
+    setup [:dummy_member]
+
     test "lists all company", %{conn: conn} do
       conn = get(conn, Routes.company_path(conn, :index))
       assert json_response(conn, 200)["data"] == []
@@ -36,9 +39,11 @@ defmodule RemoteSocialWeb.CompanyControllerTest do
 
   describe "create company" do
     test "renders company when data is valid", %{conn: conn} do
-      conn = post(conn, Routes.company_path(conn, :create), company: @create_attrs)
-      assert %{"id" => id} = json_response(conn, 201)["data"]
-
+      conn = post(conn, Routes.company_path(conn, :signup), company: @create_attrs)
+      assert %{"company" => %{"id" => id}} = json_response(conn, 201)["data"]
+      company = Org.get_company!(id)
+      {:ok, token, _claims} = RemoteSocial.Auth.Guardian.encode_and_sign(company)
+      conn = recycle(conn) |> put_req_header("authorization", "bearer: " <> token)
       conn = get(conn, Routes.company_path(conn, :show, id))
 
       assert %{
@@ -48,17 +53,18 @@ defmodule RemoteSocialWeb.CompanyControllerTest do
                "email" => "some email",
                "password_hash" => password_hash
              } = json_response(conn, 200)["data"]
+
       assert Bcrypt.verify_pass("some password_hash", password_hash)
     end
 
-    test "renders errors when data is invalid", %{conn: conn} do
+    test "attempt to create a user when unauthenticated", %{conn: conn} do
       conn = post(conn, Routes.company_path(conn, :create), company: @invalid_attrs)
-      assert json_response(conn, 422)["errors"] != %{}
+      assert json_response(conn, 401)["message"] == "unauthenticated"
     end
   end
 
   describe "update company" do
-    setup [:create_company]
+    setup [:create_company, :authenticate_company]
 
     test "renders company when data is valid", %{conn: conn, company: %Company{id: id} = company} do
       conn = put(conn, Routes.company_path(conn, :update, company), company: @update_attrs)
@@ -73,6 +79,7 @@ defmodule RemoteSocialWeb.CompanyControllerTest do
                "email" => "some updated email",
                "password_hash" => password_hash
              } = json_response(conn, 200)["data"]
+
       assert Bcrypt.verify_pass("some updated password_hash", password_hash)
     end
 
@@ -83,7 +90,7 @@ defmodule RemoteSocialWeb.CompanyControllerTest do
   end
 
   describe "delete company" do
-    setup [:create_company]
+    setup [:create_company, :authenticate_company]
 
     test "deletes chosen company", %{conn: conn, company: company} do
       conn = delete(conn, Routes.company_path(conn, :delete, company))
@@ -98,5 +105,20 @@ defmodule RemoteSocialWeb.CompanyControllerTest do
   defp create_company(_) do
     company = fixture(:company)
     %{company: company}
+  end
+
+  defp authenticate_company(%{conn: conn, company: company}) do
+    {:ok, token, _claims} = RemoteSocial.Auth.Guardian.encode_and_sign(company)
+    conn = conn |> put_req_header("authorization", "bearer: " <> token)
+    %{conn: conn}
+  end
+
+  defp dummy_member(%{conn: conn}) do
+    {:ok, member} =
+      Account.create_members(%{name: "some name", password: "some password", email: "some email"})
+
+    {:ok, token, _claims} = RemoteSocial.Auth.Guardian.encode_and_sign(member)
+    conn = conn |> put_req_header("authorization", "bearer: " <> token)
+    %{conn: conn}
   end
 end

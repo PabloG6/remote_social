@@ -15,10 +15,16 @@ defmodule RemoteSocialWeb.CompanyView do
   end
 
   def render("company.json", %{company: company}) do
-    %{id: company.id,
+    %{
+      id: company.id,
       company_name: company.company_name,
       company_tag: company.company_tag,
       email: company.email,
-      password_hash: company.password_hash}
+      password_hash: company.password_hash
+    }
+  end
+
+  def render("login.json", %{company: company, token: token}) do
+    %{data: %{company: render_one(company, CompanyView, "company.json"), token: token}}
   end
 end

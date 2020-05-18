@@ -24,10 +24,14 @@ config :logger, :console,
   format: "$time $metadata[$level] $message\n",
   metadata: [:request_id]
 
+config :remote_social, RemoteSocial.Auth.Guardian,
+  secret_key: "9pk1PvjLaEWniWYTFWpcYyiSbhyoU/XAN3qxfA27qy/F22gCRtMJmD+r4AmRrMs6",
+  issuer: "remote_social"
+
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 config :bcrypt_elixir, log_rounds: 4
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"
-

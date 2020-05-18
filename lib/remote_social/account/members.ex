@@ -3,7 +3,7 @@ defmodule RemoteSocial.Account.Members do
   import Ecto.Changeset
   alias RemoteSocial
   alias RemoteSocial.Org
-
+  alias RemoteSocial.Account.Members
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   schema "members" do
@@ -11,7 +11,7 @@ defmodule RemoteSocial.Account.Members do
     field :name, :string
     field :password_hash, :string
     field :password, :string, virtual: true
-    has_one :company, Org.Company
+    belongs_to :company, Org.Company
 
     timestamps()
   end
@@ -20,23 +20,24 @@ defmodule RemoteSocial.Account.Members do
   def changeset(members, attrs) do
     members
     |> cast(attrs, [:name, :email, :password])
-    |> validate_required([:name, :email, :password_hash])
+    |> validate_required([:name, :email, :password])
     |> put_password_hash()
     |> unique_constraint(:email)
   end
 
-  defp put_password_hash(%Ecto.Changeset{valid?: true, changes: %{password: password}} = changeset) do
+  defp put_password_hash(
+         %Ecto.Changeset{valid?: true, changes: %{password: password}} = changeset
+       ) do
     change(changeset, Bcrypt.add_hash(password))
   end
 
   defp put_password_hash(changeset) do
     changeset
   end
-  def attach_company_changeset(members, company, attrs) do
+
+  def attach_company_changeset(%Members{} = members, %Org.Company{} = company) do
     members
+    |> Ecto.Changeset.change()
     |> put_assoc(:company, company)
-
-
   end
-
 end

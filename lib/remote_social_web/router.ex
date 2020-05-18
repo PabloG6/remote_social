@@ -10,31 +10,28 @@ defmodule RemoteSocialWeb.Router do
     plug Guardian.Plug.EnsureAuthenticated
   end
 
-
   pipeline :cors do
-
   end
+
   scope "/api", RemoteSocialWeb do
     pipe_through [:api, :auth]
-    resources "/company", CompanyController, [:new, :edit]
-    resources "/members", MembersController, [:new, :edit]
+    resources "/company", CompanyController, [:new, :edit, :create]
+    resources "/members", MembersController, [:new, :edit, :create]
   end
 
-  #CompanyController scope functions that may not need authentication to function.
+  # CompanyController scope functions that may not need authentication to function.
 
   scope "/api", RemoteSocialWeb do
     pipe_through :api
-    post "/company/signup", CompanyController, [:signup]
-    post "/company/signup", CompanyController, [:login]
+    post "/company/signup", CompanyController, :signup
+    post "/company/login", CompanyController, :login
   end
 
   scope "/api", RemoteSocialWeb do
     pipe_through :api
-    post"/members/signup", MembersController, [:signup]
-    post "/members/login", MembersController, [:login]
-
+    post "/members/signup", MembersController, :signup
+    post "/members/login", MembersController, :login
   end
-
 
   # Enables LiveDashboard only for development
   #

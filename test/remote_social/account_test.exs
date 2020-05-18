@@ -6,9 +6,13 @@ defmodule RemoteSocial.AccountTest do
   describe "members" do
     alias RemoteSocial.Account.Members
 
-    @valid_attrs %{email: "some email", name: "some name", password_hash: "some password_hash"}
-    @update_attrs %{email: "some updated email", name: "some updated name", password_hash: "some updated password_hash"}
-    @invalid_attrs %{email: nil, name: nil, password_hash: nil}
+    @valid_attrs %{email: "some email", name: "some name", password: "some password_hash"}
+    @update_attrs %{
+      email: "some updated email",
+      name: "some updated name",
+      password: "some updated password_hash"
+    }
+    @invalid_attrs %{email: nil, name: nil, password: nil}
 
     def members_fixture(attrs \\ %{}) do
       {:ok, members} =
@@ -21,19 +25,19 @@ defmodule RemoteSocial.AccountTest do
 
     test "list_members/0 returns all members" do
       members = members_fixture()
-      assert Account.list_members() == [members]
+      assert Account.list_members() == [%{members | password: nil}]
     end
 
     test "get_members!/1 returns the members with given id" do
       members = members_fixture()
-      assert Account.get_members!(members.id) == members
+      assert Account.get_members!(members.id) == %{members | password: nil}
     end
 
     test "create_members/1 with valid data creates a members" do
       assert {:ok, %Members{} = members} = Account.create_members(@valid_attrs)
       assert members.email == "some email"
       assert members.name == "some name"
-      assert members.password_hash == "some password_hash"
+      assert Bcrypt.verify_pass(members.password, members.password_hash)
     end
 
     test "create_members/1 with invalid data returns error changeset" do
@@ -45,13 +49,13 @@ defmodule RemoteSocial.AccountTest do
       assert {:ok, %Members{} = members} = Account.update_members(members, @update_attrs)
       assert members.email == "some updated email"
       assert members.name == "some updated name"
-      assert members.password_hash == "some updated password_hash"
+      assert Bcrypt.verify_pass("some updated password_hash", members.password_hash)
     end
 
     test "update_members/2 with invalid data returns error changeset" do
       members = members_fixture()
       assert {:error, %Ecto.Changeset{}} = Account.update_members(members, @invalid_attrs)
-      assert members == Account.get_members!(members.id)
+      assert %{members | password: nil} == Account.get_members!(members.id)
     end
 
     test "delete_members/1 deletes the members" do

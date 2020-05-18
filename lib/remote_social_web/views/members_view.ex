@@ -11,11 +11,15 @@ defmodule RemoteSocialWeb.MembersView do
   end
 
   def render("members.json", %{members: members}) do
-    %{id: members.id,
+    %{
+      id: members.id,
       name: members.name,
       email: members.email,
-      password_hash: members.password_hash}
+      password_hash: members.password_hash
+    }
   end
 
-
+  def render("login.json", %{members: members, token: token}) do
+    %{data: %{member: render_one(members, MembersView, "members.json"), token: token}}
+  end
 end

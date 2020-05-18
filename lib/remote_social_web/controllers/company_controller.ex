@@ -3,9 +3,7 @@ defmodule RemoteSocialWeb.CompanyController do
 
   alias RemoteSocial.Org
   alias RemoteSocial.Account
-
   alias RemoteSocial.Org.Company
-
 
   action_fallback RemoteSocialWeb.FallbackController
 
@@ -44,57 +42,56 @@ defmodule RemoteSocialWeb.CompanyController do
     end
   end
 
-
   def signup(conn, %{"company" => company_params}) do
     with {:ok, %Company{} = company} <- Org.create_company(company_params) do
       conn
       |> put_status(:created)
       |> authenticate_company(company)
+    end
+  end
 
-
+  def login(conn, %{"email" => email, "password" => password}) do
+    with {:ok, %Company{} = company} <- Org.get_company_by(email: email) do
+      conn
+      |> put_status(:ok)
+      |> authenticate_company(%{company | password: password})
     end
   end
 
   defp authenticate_company(conn, %Company{} = company) do
     with {:ok, _company} <- Org.authenticate_company(company),
-          conn <- RemoteSocial.Auth.Guardian.Plug.sign_in(conn, company),
-          token <- RemoteSocial.Auth.Guardian.Plug.current_token(conn)
-    do
+         conn <- RemoteSocial.Auth.Guardian.Plug.sign_in(conn, company),
+         token <- RemoteSocial.Auth.Guardian.Plug.current_token(conn) do
       conn
-      |>put_view(RemoteSocial.CompanyView)
-      |>render("login.json", company: company, token: token)
+      |> put_view(RemoteSocialWeb.CompanyView)
+      |> render("login.json", company: company, token: token)
     else
       {:error, :invalid_credentials} ->
         conn
         |> resp(401, Poison.encode!(%{message: "Email or password is incorrect"}))
         |> send_resp()
 
-      error -> error
+      error ->
+        error
     end
-
-
   end
-
 
   def add_member(conn, %{"member_id" => member_id}) do
     with {:ok, %Account.Members{} = member} <- Account.get_members(member_id),
-          {:ok, %Account.Members{}} <- Account.attach_company(%Company{}, member) do
-            conn
-            |> put_status(:created)
-            |> put_view(RemoteSocial.CompanyView)
-            |> render("201.json", message: "Successfully added this member to your company", code: :attach_success)
-
-
+         {:ok, %Account.Members{}} <- Account.attach_company(%Company{}, member) do
+      conn
+      |> put_status(:created)
+      |> put_view(RemoteSocialWeb.CompanyView)
+      |> render("201.json",
+        message: "Successfully added this member to your company",
+        code: :attach_success
+      )
     end
-
   end
 
-  def remove_member(conn, %{"id" => id}) do
-
+  def remove_member(_conn, %{"id" => _id}) do
   end
 
-  def list_members(conn, _params) do
-
+  def list_members(_conn, _params) do
   end
 end
-
