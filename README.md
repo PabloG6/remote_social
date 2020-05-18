@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # RemoteSocial
 
 To start your Phoenix server:
@@ -16,3 +17,7 @@ Ready to run in production? Please [check our deployment guides](https://hexdocs
   * Docs: https://hexdocs.pm/phoenix
   * Forum: https://elixirforum.com/c/phoenix-forum
   * Source: https://github.com/phoenixframework/phoenix
+=======
+# remote_social
+Elixir Backend for my social media platform for remote employees.
+>>>>>>> a2e00be034579eac5e71bc4a4447b6ce4bb29b12
