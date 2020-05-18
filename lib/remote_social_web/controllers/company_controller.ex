@@ -68,7 +68,8 @@ defmodule RemoteSocialWeb.CompanyController do
     else
       {:error, :invalid_credentials} ->
         conn
-        |> resp(401, Poison.encode!(%{message: "Email or password is incorrect"}))
+        |> put_resp_content_type("application/json")
+        |> resp(401, Poison.encode!(%{message: "Incorrect email or password", code: :incorrect_credentials}))
         |> send_resp()
 
       error ->

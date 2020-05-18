@@ -37,7 +37,7 @@ defmodule RemoteSocialWeb.CompanyControllerTest do
     end
   end
 
-  describe "create company" do
+  describe "signup company" do
     test "renders company when data is valid", %{conn: conn} do
       conn = post(conn, Routes.company_path(conn, :signup), company: @create_attrs)
       assert %{"company" => %{"id" => id}} = json_response(conn, 201)["data"]
@@ -55,11 +55,38 @@ defmodule RemoteSocialWeb.CompanyControllerTest do
              } = json_response(conn, 200)["data"]
 
       assert Bcrypt.verify_pass("some password_hash", password_hash)
+
+
     end
 
-    test "attempt to create a user when unauthenticated", %{conn: conn} do
-      conn = post(conn, Routes.company_path(conn, :create), company: @invalid_attrs)
-      assert json_response(conn, 401)["message"] == "unauthenticated"
+    test "signup user with invalid information", %{conn: conn} do
+      conn = post(conn, Routes.company_path(conn, :signup), company: @invalid_attrs)
+      assert json_response(conn, 422)["errors"] != %{}
+    end
+  end
+
+  describe "login members" do
+    setup [:create_company]
+    test "log in members when credentials are correct", %{conn: conn} do
+      conn = post(conn, Routes.company_path(conn, :login), email: "some email", password: "some password_hash")
+      assert %{
+                "company" => %{
+                    "id" => id,
+                },
+                "token" => token
+              } = json_response(conn, 200)["data"]
+
+      %Company{id: id_check} = RemoteSocial.Auth.Guardian.Plug.current_resource(conn)
+      assert id_check == id
+
+    end
+
+    test "fail to log in members when credentials are incorrect", %{conn: conn} do
+      conn = post(conn, Routes.company_path(conn, :login), email: "some email", password: "some wrong password")
+      assert %{"message" => "Incorrect email or password", "code" => "incorrect_credentials"} = json_response(conn, 401)
+
+      assert RemoteSocial.Auth.Guardian.Plug.current_resource(conn) == nil
+
     end
   end
 
