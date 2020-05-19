@@ -3,7 +3,7 @@ defmodule RemoteSocialWeb.UserSocket do
 
   ## Channels
   # channel "room:*", RemoteSocialWeb.RoomChannel
-
+  channel "messages:*", RemoteSocialWeb.MessagesChannel
   # Socket params are passed from the client and can
   # be used to verify and authenticate a user. After
   # verification, you can put default assigns into

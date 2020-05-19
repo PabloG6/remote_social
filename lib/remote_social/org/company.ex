@@ -5,8 +5,8 @@ defmodule RemoteSocial.Org.Company do
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   schema "company" do
-    field :company_name, :string
-    field :company_tag, :string
+    field :name, :string
+    field :tag, :string
     field :email, :string
     field :password_hash, :string
     field :password, :string, virtual: true
@@ -17,10 +17,10 @@ defmodule RemoteSocial.Org.Company do
   @doc false
   def changeset(company, attrs) do
     company
-    |> cast(attrs, [:company_name, :company_tag, :email, :password])
-    |> validate_required([:company_name, :company_tag, :email, :password])
+    |> cast(attrs, [:name, :tag, :email, :password])
+    |> validate_required([:name, :company_tag, :email, :password])
     |> put_password_hash()
-    |> unique_constraint(:company_name)
+    |> unique_constraint(:name)
     |> unique_constraint(:company_tag)
     |> unique_constraint(:email)
   end

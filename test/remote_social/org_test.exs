@@ -18,7 +18,7 @@ defmodule RemoteSocial.OrgTest do
       email: "some updated email",
       password: "some updated password_hash"
     }
-    @invalid_attrs %{company_name: nil, company_tag: nil, email: nil, password: nil}
+    @invalid_attrs %{name: nil, company_tag: nil, email: nil, password: nil}
 
     def company_fixture(attrs \\ %{}) do
       {:ok, company} =
@@ -46,7 +46,7 @@ defmodule RemoteSocial.OrgTest do
 
     test "create_company/1 with valid data creates a company" do
       assert {:ok, %Company{} = company} = Org.create_company(@valid_attrs)
-      assert company.company_name == "some company_name"
+      assert company.name == "some company_name"
       assert company.company_tag == "some company_tag"
       assert company.email == "some email"
       assert Bcrypt.verify_pass("some password_hash", company.password_hash)

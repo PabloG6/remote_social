@@ -6,18 +6,18 @@ defmodule RemoteSocialWeb.CompanyControllerTest do
   alias RemoteSocial.Account
 
   @create_attrs %{
-    company_name: "some company_name",
+    name: "some name",
     company_tag: "some company_tag",
     email: "some email",
     password: "some password_hash"
   }
   @update_attrs %{
-    company_name: "some updated company_name",
+    name: "some updated name",
     company_tag: "some updated company_tag",
     email: "some updated email",
     password: "some updated password_hash"
   }
-  @invalid_attrs %{company_name: nil, company_tag: nil, email: nil, password: nil}
+  @invalid_attrs %{name: nil, company_tag: nil, email: nil, password: nil}
 
   def fixture(:company) do
     {:ok, company} = Org.create_company(@create_attrs)
@@ -48,7 +48,7 @@ defmodule RemoteSocialWeb.CompanyControllerTest do
 
       assert %{
                "id" => id,
-               "company_name" => "some company_name",
+               "name" => "some name",
                "company_tag" => "some company_tag",
                "email" => "some email",
                "password_hash" => password_hash
@@ -101,7 +101,7 @@ defmodule RemoteSocialWeb.CompanyControllerTest do
 
       assert %{
                "id" => id,
-               "company_name" => "some updated company_name",
+               "name" => "some updated name",
                "company_tag" => "some updated company_tag",
                "email" => "some updated email",
                "password_hash" => password_hash

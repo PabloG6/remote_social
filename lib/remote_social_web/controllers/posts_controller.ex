@@ -3,7 +3,8 @@ defmodule RemoteSocialWeb.PostsController do
 
   alias RemoteSocial.Social
   alias RemoteSocial.Social.Posts
-
+  alias RemoteSocial.Auth
+  alias Ecto
   action_fallback RemoteSocialWeb.FallbackController
 
   def index(conn, _params) do
@@ -12,7 +13,8 @@ defmodule RemoteSocialWeb.PostsController do
   end
 
   def create(conn, %{"posts" => posts_params}) do
-    with {:ok, %Posts{} = posts} <- Social.create_posts(posts_params) do
+    member = Auth.Guardian.Plug.current_resource(conn)
+    with {:ok, %Posts{} = posts} <- Social.create_posts(member, posts_params) do
       conn
       |> put_status(:created)
       |> put_resp_header("location", Routes.posts_path(conn, :show, posts))
@@ -26,6 +28,7 @@ defmodule RemoteSocialWeb.PostsController do
   end
 
   def update(conn, %{"id" => id, "posts" => posts_params}) do
+
     posts = Social.get_posts!(id)
 
     with {:ok, %Posts{} = posts} <- Social.update_posts(posts, posts_params) do
@@ -40,4 +43,20 @@ defmodule RemoteSocialWeb.PostsController do
       send_resp(conn, :no_content, "")
     end
   end
+
+  def list_feed(conn, _params) do
+    member = Auth.Guardian.Plug.current_resource(conn)
+    page = Social.list_feed(member)
+
+    conn
+    |> put_status(:ok)
+    |> put_resp_content_type("application/json")
+    |> render(:feed,
+          posts: page.entries,
+          page_number: page.page_number,
+          total_pages: page.total_pages,
+          total_entries: page.total_entries)
+  end
+
+
 end

@@ -3,7 +3,8 @@ defmodule RemoteSocialWeb.MessagesController do
 
   alias RemoteSocial.Social
   alias RemoteSocial.Social.Messages
-
+  alias RemoteSocial.Auth
+  alias RemoteSocial.Account
   action_fallback RemoteSocialWeb.FallbackController
 
   def index(conn, _params) do
@@ -11,8 +12,10 @@ defmodule RemoteSocialWeb.MessagesController do
     render(conn, "index.json", message: message)
   end
 
-  def create(conn, %{"messages" => messages_params}) do
-    with {:ok, %Messages{} = messages} <- Social.create_messages(messages_params) do
+  def create(conn, %{"messages" => messages_params, "recipient_id" => recipient_id}) do
+    sender = Auth.Guardian.Plug.current_resource(conn)
+    recipient = Account.get_members!(recipient_id)
+    with {:ok, %Messages{} = messages} <- Social.create_messages(sender, recipient, messages_params) do
       conn
       |> put_status(:created)
       |> put_resp_header("location", Routes.messages_path(conn, :show, messages))

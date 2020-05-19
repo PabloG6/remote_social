@@ -3,7 +3,8 @@ defmodule RemoteSocialWeb.PostsControllerTest do
 
   alias RemoteSocial.Social
   alias RemoteSocial.Social.Posts
-
+  alias RemoteSocial.Account
+  alias RemoteSocial.Auth
   @create_attrs %{
     link: "some link",
     text: "some text"
@@ -12,14 +13,23 @@ defmodule RemoteSocialWeb.PostsControllerTest do
     link: "some updated link",
     text: "some updated text"
   }
+
+
+  @member_attrs %{
+    email: "some email",
+    name: "some name",
+    password: "some password_hash"
+  }
   @invalid_attrs %{link: nil, text: nil}
 
   def fixture(:posts) do
-    {:ok, posts} = Social.create_posts(@create_attrs)
-    posts
+    {:ok, member} = Account.create_members(@member_attrs)
+    {:ok, posts} = Social.create_posts(member, (@create_attrs)
+    {member, posts}
   end
 
   setup %{conn: conn} do
+
     {:ok, conn: put_req_header(conn, "accept", "application/json")}
   end
 
@@ -85,8 +95,11 @@ defmodule RemoteSocialWeb.PostsControllerTest do
     end
   end
 
-  defp create_posts(_) do
-    posts = fixture(:posts)
-    %{posts: posts}
+  defp create_posts(%{conn: conn}) do
+    {member, posts} = fixture(:posts)
+    {:ok, token, _} = Auth.Guardian.Plug.current_resource(conn)
+    conn = conn |> put_req_header("authorization", "bearer: "<> token)
+
+    %{posts: posts, member: member}
   end
 end

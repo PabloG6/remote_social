@@ -7,7 +7,7 @@ defmodule RemoteSocial.Social do
   alias RemoteSocial.Repo
 
   alias RemoteSocial.Social.Posts
-
+  alias RemoteSocial.Account
   @doc """
   Returns the list of post.
 
@@ -49,10 +49,17 @@ defmodule RemoteSocial.Social do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_posts(attrs \\ %{}) do
+  def create_posts(%Account.Members{} = members, attrs \\ %{}) do
     %Posts{}
-    |> Posts.changeset(attrs)
+    |> Posts.create_changeset(members |> Repo.preload([:company]), attrs)
     |> Repo.insert()
+  end
+
+  def list_feed(%Account.Members{} = members) do
+    %Account.Members{company: company} = members |> Repo.preload([:company])
+    query = from p in Posts,
+            where: p.company_id == ^company.id
+    Repo.paginate(query)
   end
 
   @doc """
@@ -145,9 +152,9 @@ defmodule RemoteSocial.Social do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_messages(attrs \\ %{}) do
+  def create_messages(sender, recipient, attrs \\ %{}) do
     %Messages{}
-    |> Messages.changeset(attrs)
+    |> Messages.create_changeset(sender, recipient, attrs)
     |> Repo.insert()
   end
 

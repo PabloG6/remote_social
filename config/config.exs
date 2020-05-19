@@ -31,7 +31,7 @@ config :remote_social, RemoteSocial.Auth.Guardian,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 config :bcrypt_elixir, log_rounds: 4
-config :app, RemoteSocial.Repo, migration_timestamps: [type: :utc_datetime]
+config :remote_social, RemoteSocial.Repo, migration_timestamps: [type: :utc_datetime]
 
 
 # Import environment specific config. This must remain at the bottom

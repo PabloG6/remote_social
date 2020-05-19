@@ -138,7 +138,7 @@ defmodule RemoteSocialWeb.MembersControllerTest do
   end
 
   defp dummy_company(%{conn: conn}) do
-    {:ok, company} = Org.create_company(%{company_name: "some company name", company_tag: "some company tag", password: "some company password", email: "some company email"})
+    {:ok, company} = Org.create_company(%{nam: "some company name", company_tag: "some company tag", password: "some company password", email: "some company email"})
     {:ok, token, _claims} = RemoteSocial.Auth.Guardian.encode_and_sign(company)
     conn = conn |> put_req_header("authorization", "bearer: " <> token)
     %{conn: conn}

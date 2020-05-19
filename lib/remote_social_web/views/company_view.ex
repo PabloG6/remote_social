@@ -17,7 +17,7 @@ defmodule RemoteSocialWeb.CompanyView do
   def render("company.json", %{company: company}) do
     %{
       id: company.id,
-      company_name: company.company_name,
+      name: company.name,
       company_tag: company.company_tag,
       email: company.email,
       password_hash: company.password_hash

@@ -20,4 +20,13 @@ defmodule RemoteSocial.Social.Messages do
     |> cast(attrs, [:text])
     |> validate_required([:text])
   end
+
+  def create_changeset(messages, sender, recipient, attrs) do
+    messages
+    |> cast(attrs, [:text])
+    |> validate_required(:text)
+    |> put_assoc(:sender, sender)
+    |> put_assoc(:recipient, recipient)
+
+  end
 end
