@@ -18,7 +18,7 @@ defmodule RemoteSocialWeb.CompanyView do
     %{
       id: company.id,
       name: company.name,
-      company_tag: company.company_tag,
+      tag: company.tag,
       email: company.email,
       password_hash: company.password_hash
     }

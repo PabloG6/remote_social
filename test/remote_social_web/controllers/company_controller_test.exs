@@ -7,17 +7,17 @@ defmodule RemoteSocialWeb.CompanyControllerTest do
 
   @create_attrs %{
     name: "some name",
-    company_tag: "some company_tag",
+    tag: "some company_tag",
     email: "some email",
     password: "some password_hash"
   }
   @update_attrs %{
     name: "some updated name",
-    company_tag: "some updated company_tag",
+    tag: "some updated company_tag",
     email: "some updated email",
     password: "some updated password_hash"
   }
-  @invalid_attrs %{name: nil, company_tag: nil, email: nil, password: nil}
+  @invalid_attrs %{name: nil, tag: nil, email: nil, password: nil}
 
   def fixture(:company) do
     {:ok, company} = Org.create_company(@create_attrs)
@@ -49,7 +49,7 @@ defmodule RemoteSocialWeb.CompanyControllerTest do
       assert %{
                "id" => id,
                "name" => "some name",
-               "company_tag" => "some company_tag",
+               "tag" => "some company_tag",
                "email" => "some email",
                "password_hash" => password_hash
              } = json_response(conn, 200)["data"]
@@ -102,7 +102,7 @@ defmodule RemoteSocialWeb.CompanyControllerTest do
       assert %{
                "id" => id,
                "name" => "some updated name",
-               "company_tag" => "some updated company_tag",
+               "tag" => "some updated company_tag",
                "email" => "some updated email",
                "password_hash" => password_hash
              } = json_response(conn, 200)["data"]

@@ -118,8 +118,8 @@ defmodule RemoteSocial.Account do
   """
 
   def attach_company(%Org.Company{} = company, %Members{} = member) do
-    Members.attach_company_changeset(member, company)
-    |> Repo.insert()
+    Members.attach_company_changeset(member |> Repo.preload([:company]), company)
+    |> Repo.update()
   end
 
   def change_members(%Members{} = members, attrs \\ %{}) do

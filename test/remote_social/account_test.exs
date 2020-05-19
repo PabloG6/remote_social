@@ -2,6 +2,7 @@ defmodule RemoteSocial.AccountTest do
   use RemoteSocial.DataCase
 
   alias RemoteSocial.Account
+  alias RemoteSocial.Org
 
   describe "members" do
     alias RemoteSocial.Account.Members
@@ -10,10 +11,15 @@ defmodule RemoteSocial.AccountTest do
     @update_attrs %{
       email: "some updated email",
       name: "some updated name",
-      password: "some updated password_hash"
+      password: "some updated password hash"
     }
     @invalid_attrs %{email: nil, name: nil, password: nil}
-
+    @company_attrs %{
+      name: "some company name",
+      tag: "some company tag",
+      email: "some email",
+      password: "some password hash"
+    }
     def members_fixture(attrs \\ %{}) do
       {:ok, members} =
         attrs
@@ -21,6 +27,14 @@ defmodule RemoteSocial.AccountTest do
         |> Account.create_members()
 
       members
+    end
+
+    def company_fixture(attrs \\ %{}) do
+      {:ok, company} =
+        attrs
+        |> Enum.into(@company_attrs)
+        |> Org.create_company()
+        company
     end
 
     test "list_members/0 returns all members" do
@@ -49,7 +63,7 @@ defmodule RemoteSocial.AccountTest do
       assert {:ok, %Members{} = members} = Account.update_members(members, @update_attrs)
       assert members.email == "some updated email"
       assert members.name == "some updated name"
-      assert Bcrypt.verify_pass("some updated password_hash", members.password_hash)
+      assert Bcrypt.verify_pass("some updated password hash", members.password_hash)
     end
 
     test "update_members/2 with invalid data returns error changeset" do
@@ -66,7 +80,15 @@ defmodule RemoteSocial.AccountTest do
 
     test "change_members/1 returns a members changeset" do
       members = members_fixture()
+
       assert %Ecto.Changeset{} = Account.change_members(members)
+    end
+
+    @tag attach_company: true
+    test "attach_company/2 associates a company with a member" do
+      members = members_fixture()
+      company = company_fixture()
+      assert {:ok, %Account.Members{}} = Account.attach_company(company, members)
     end
   end
 end

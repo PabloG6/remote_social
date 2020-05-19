@@ -18,10 +18,10 @@ defmodule RemoteSocial.Org.Company do
   def changeset(company, attrs) do
     company
     |> cast(attrs, [:name, :tag, :email, :password])
-    |> validate_required([:name, :company_tag, :email, :password])
+    |> validate_required([:name, :tag, :email, :password])
     |> put_password_hash()
     |> unique_constraint(:name)
-    |> unique_constraint(:company_tag)
+    |> unique_constraint(:tag)
     |> unique_constraint(:email)
   end
 

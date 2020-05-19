@@ -5,6 +5,7 @@ defmodule RemoteSocialWeb.PostsControllerTest do
   alias RemoteSocial.Social.Posts
   alias RemoteSocial.Account
   alias RemoteSocial.Auth
+  alias RemoteSocial.Org
   @create_attrs %{
     link: "some link",
     text: "some text"
@@ -15,25 +16,41 @@ defmodule RemoteSocialWeb.PostsControllerTest do
   }
 
 
-  @member_attrs %{
+  @members_attrs %{
     email: "some email",
     name: "some name",
     password: "some password_hash"
   }
+
+  @company_attrs %{
+    email: "some company email",
+    tag: "some company tag",
+    name: "some company name",
+    password: "some company password"
+  }
   @invalid_attrs %{link: nil, text: nil}
 
-  def fixture(:posts) do
-    {:ok, member} = Account.create_members(@member_attrs)
-    {:ok, posts} = Social.create_posts(member, (@create_attrs)
-    {member, posts}
+  def fixture(member) do
+    {:ok, posts} = Social.create_posts(member, @create_attrs)
+    posts
   end
 
+  def members_fixture() do
+    {:ok, member} = Account.create_members(@members_attrs)
+    member
+  end
+
+  def company_fixture(attrs \\ %{}) do
+    {:ok, company} = attrs |> Enum.into(@company_attrs) |> Org.create_company()
+    company
+  end
   setup %{conn: conn} do
 
     {:ok, conn: put_req_header(conn, "accept", "application/json")}
   end
 
   describe "index" do
+    setup [:create_member, :authenticate_member]
     test "lists all post", %{conn: conn} do
       conn = get(conn, Routes.posts_path(conn, :index))
       assert json_response(conn, 200)["data"] == []
@@ -41,10 +58,11 @@ defmodule RemoteSocialWeb.PostsControllerTest do
   end
 
   describe "create posts" do
-    test "renders posts when data is valid", %{conn: conn} do
+    setup [:create_member, :authenticate_member]
+    test "renders posts when data is valid", %{conn: conn, token: token} do
       conn = post(conn, Routes.posts_path(conn, :create), posts: @create_attrs)
       assert %{"id" => id} = json_response(conn, 201)["data"]
-
+      conn = recycle(conn) |> put_req_header("authorization", "bearer: " <> token)
       conn = get(conn, Routes.posts_path(conn, :show, id))
 
       assert %{
@@ -61,7 +79,7 @@ defmodule RemoteSocialWeb.PostsControllerTest do
   end
 
   describe "update posts" do
-    setup [:create_posts]
+    setup [:create_member, :authenticate_member, :create_posts]
 
     test "renders posts when data is valid", %{conn: conn, posts: %Posts{id: id} = posts} do
       conn = put(conn, Routes.posts_path(conn, :update, posts), posts: @update_attrs)
@@ -83,7 +101,7 @@ defmodule RemoteSocialWeb.PostsControllerTest do
   end
 
   describe "delete posts" do
-    setup [:create_posts]
+    setup [:create_member, :authenticate_member, :create_posts, :create_company, :attach_member]
 
     test "deletes chosen posts", %{conn: conn, posts: posts} do
       conn = delete(conn, Routes.posts_path(conn, :delete, posts))
@@ -95,11 +113,32 @@ defmodule RemoteSocialWeb.PostsControllerTest do
     end
   end
 
-  defp create_posts(%{conn: conn}) do
-    {member, posts} = fixture(:posts)
-    {:ok, token, _} = Auth.Guardian.Plug.current_resource(conn)
-    conn = conn |> put_req_header("authorization", "bearer: "<> token)
-
-    %{posts: posts, member: member}
+  defp create_company(_) do
+    company = company_fixture()
+    %{company: company}
   end
+
+  defp create_member(_) do
+    member = members_fixture()
+    %{member: member}
+  end
+
+  #for now let create post also add_member/2 because users get posts based on their company.
+  defp create_posts(%{member: member}) do
+
+    posts = fixture(member)
+    %{posts: posts}
+  end
+
+  defp attach_member(%{member: member, company: company} = conn) do
+    {:ok, _} = Org.add_member(company, member)
+    conn
+  end
+
+  defp authenticate_member(%{conn: conn, member: member}) do
+    {:ok, token, _} = Auth.Guardian.encode_and_sign(member)
+    conn = conn |> put_req_header("authorization", "bearer: "<> token)
+    %{conn: conn, token: token}
+  end
+
 end
