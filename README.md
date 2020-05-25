@@ -18,3 +18,4 @@ Ready to run in production? Please [check our deployment guides](https://hexdocs
   * Forum: https://elixirforum.com/c/phoenix-forum
   * Source: https://github.com/phoenixframework/phoenix
 
+I might change the scope and objectives of this project because I realized it's pretty superfluous and I can't find a good use case that will keep people actively using it.
